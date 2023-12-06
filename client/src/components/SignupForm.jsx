@@ -1,16 +1,16 @@
 import { useState } from 'react';
 import { Form, Button, Alert } from 'react-bootstrap';
-
-import { createUser } from '../utils/API';
+import { useMutation } from '@apollo/client';
+import { ADD_USER } from '../utils/mutations'; // Adjust the path accordingly
 import Auth from '../utils/auth';
 
 const SignupForm = () => {
-  // set initial form state
   const [userFormData, setUserFormData] = useState({ username: '', email: '', password: '' });
-  // set state for form validation
   const [validated] = useState(false);
-  // set state for alert
   const [showAlert, setShowAlert] = useState(false);
+
+  // Use the useMutation hook to get the addUser function and loading/error data
+  const [addUser, { loading }] = useMutation(ADD_USER);
 
   const handleInputChange = (event) => {
     const { name, value } = event.target;
@@ -20,7 +20,6 @@ const SignupForm = () => {
   const handleFormSubmit = async (event) => {
     event.preventDefault();
 
-    // check if form has everything (as per react-bootstrap docs)
     const form = event.currentTarget;
     if (form.checkValidity() === false) {
       event.preventDefault();
@@ -28,20 +27,31 @@ const SignupForm = () => {
     }
 
     try {
-      const response = await createUser(userFormData);
+      // Use the addUser mutation function
+      const { data } = await addUser({
+        variables: { email: userFormData.email, password: userFormData.password, username: userFormData.username },
+      });
 
-      if (!response.ok) {
-        throw new Error('something went wrong!');
-      }
-
-      const { token, user } = await response.json();
-      console.log(user);
+      console.log("mutation data: ", data)
+    
+      // Extract token and user from the mutation response
+      const { token, user } = data.addUser;
+      console.log('User: ', user);
+    
+      // Log in the user with Auth
       Auth.login(token);
     } catch (err) {
       console.error(err);
-      setShowAlert(true);
+    
+      // Check if the error is related to the GraphQL response
+      if (err.graphQLErrors && err.graphQLErrors.length > 0) {
+        setShowAlert(true);
+      } else {
+        // Handle non-GraphQL errors here
+        // ...
+      }
     }
-
+    
     setUserFormData({
       username: '',
       email: '',
@@ -100,7 +110,7 @@ const SignupForm = () => {
           disabled={!(userFormData.username && userFormData.email && userFormData.password)}
           type='submit'
           variant='success'>
-          Submit
+          {loading ? 'Submitting...' : 'Submit'}
         </Button>
       </Form>
     </>
