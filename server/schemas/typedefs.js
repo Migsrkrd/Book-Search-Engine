@@ -1,6 +1,6 @@
 const typedefs = `
 type Book {
-    bookId: ID!
+    bookId: [String]!
     authors: [String]
     description: String
     title: String
@@ -21,16 +21,24 @@ type Auth {
     user: User
 }
 
+input BookInput {
+    authors: [String]
+    description: String
+    title: String
+    bookId: ID
+    image: String
+    link: String
+  }
+
 type Query {
     me: User
-
 }
 
 type Mutation {
     login(email: String!, password: String!): Auth
     addUser(username: String!, email: String!, password: String!): Auth
     removeBook(bookId: ID!): User
-    saveBook(authors: [String], description: String, title: String, bookId: ID, image: String, link: String): User
+    saveBook(bookInput: BookInput): User
 }`;
 
 module.exports = typedefs;

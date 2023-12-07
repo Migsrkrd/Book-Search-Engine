@@ -5,60 +5,53 @@ const resolvers = {
     Query: {
         me: async (parent, args, context) => {
             if(context.user){
-                const userData = await User.findOne({_id: context.user._id})
-                .select('-__v -password')
-                .populate('books')
-
-                return userData;
+                return User.findOne({_id: context.user._id});
             }
-
-            // throw new AuthenticationError('Not logged in');
+            throw AuthenticationError;
         },
     },
 
     Mutation: {
-        addUser: async (parent, args) => {
-            const user = await User.create(args);
+        addUser: async (parent, {username, email, password}) => {
+            const user = await User.create({username, email, password});
             const token = signToken(user);
-
+            console.log('User created successfully:', user);
+            console.log('Token created successfully:', token);
             return {token, user};
         },
         login: async (parent, {email, password}) => {
             const user = await User.findOne({email});
 
             if(!user){
-                throw new AuthenticationError('Incorrect credentials');
+                throw new AuthenticationError;
             }
 
             const correctPw = await user.isCorrectPassword(password);
 
             if(!correctPw){
-                throw new AuthenticationError('Incorrect credentials');
+                throw new AuthenticationError;
             }
 
             const token = signToken(user);
             return {token, user};
         },
-        saveBook: async (_, { authors, description, title, bookId, image, link }, context) => {
+        saveBook: async (parent, { bookInput }, context) => {
+            console.log('Resolver execution started');
+            console.log('Received bookInput:', bookInput);
+          
             try {
-              // Check if the user is logged in
-              if (!context.user) {
-                throw new Error('You must be logged in to perform this action.');
-              }
-      
-              // Prepare the book data to be added to the user's savedBooks array
-              const bookData = { authors, description, title, bookId, image, link };
-      
-              // Update the user's savedBooks array with the new book data
               const updatedUser = await User.findOneAndUpdate(
                 { _id: context.user._id },
-                { $push: { savedBooks: bookData } },
-                { new: true }
+                { $addToSet: { savedBooks: bookInput } },
+                { new: true, runValidators: true }
               );
-      
+          
+              console.log('User updated successfully:', updatedUser);
+          
               return updatedUser;
-            } catch (error) {
-              throw new Error(`Error in saveBook resolver: ${error.message}`);
+            } catch (err) {
+              console.error('Error in resolver:', err);
+              throw new Error('Error saving the book to the user');
             }
           },
         removeBook: async (parent, {bookId}, context) => {

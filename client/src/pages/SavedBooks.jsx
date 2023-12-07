@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import {
   Container,
   Card,
@@ -15,16 +15,19 @@ import { GET_ME } from '../utils/queries';
 import { REMOVE_BOOK } from '../utils/mutations';
 
 const SavedBooks = () => {
-  const { loading, data } = useQuery(GET_ME);
   const [removeBook] = useMutation(REMOVE_BOOK);
 
   const [userData, setUserData] = useState({});
 
-  useEffect(() => {
-    if (data) {
-      setUserData(data.me);
-    }
-  }, [data]);
+  // useEffect(() => {
+  //   if (data) {
+  //     setUserData(data.me);
+  //   }
+  // }, [data]);
+
+  const [getUserData, { loading }] = useQuery(GET_ME);
+
+  setUserData(getUserData?.data?.me || []);
 
   const handleDeleteBook = async (bookId) => {
     try {

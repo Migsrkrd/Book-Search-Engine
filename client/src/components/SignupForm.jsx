@@ -20,44 +20,36 @@ const SignupForm = () => {
   const handleFormSubmit = async (event) => {
     event.preventDefault();
 
+    // check if form has everything (as per react-bootstrap docs)
     const form = event.currentTarget;
     if (form.checkValidity() === false) {
       event.preventDefault();
       event.stopPropagation();
     }
 
-    try {
-      // Use the addUser mutation function
-      const { data } = await addUser({
-        variables: { email: userFormData.email, password: userFormData.password, username: userFormData.username },
-      });
-
-      console.log("mutation data: ", data)
-    
-      // Extract token and user from the mutation response
-      const { token, user } = data.addUser;
-      console.log('User: ', user);
-    
-      // Log in the user with Auth
-      Auth.login(token);
-    } catch (err) {
-      console.error(err);
-    
-      // Check if the error is related to the GraphQL response
-      if (err.graphQLErrors && err.graphQLErrors.length > 0) {
-        setShowAlert(true);
-      } else {
-        // Handle non-GraphQL errors here
-        // ...
-      }
-    }
-    
-    setUserFormData({
-      username: '',
-      email: '',
-      password: '',
+   try {
+    const { data } = await addUser({
+      variables: { ...userFormData },
     });
-  };
+
+    console.log("data", data);
+
+    Auth.login(data.addUser.token);
+
+    console.log(Auth.getProfile());
+
+    // Delay the redirection by 2 seconds (adjust as needed)
+  } catch (err) {
+    console.error(err);
+    setShowAlert(true);
+  }
+
+  setUserFormData({
+    username: '',
+    email: '',
+    password: '',
+  });
+};
 
   return (
     <>

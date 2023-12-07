@@ -70,29 +70,43 @@ const SearchBooks = () => {
   
     // get token
     const token = Auth.loggedIn() ? Auth.getToken() : null;
+
+    console.log('bookToSave:', bookToSave);
+    console.log('token:', token);
   
     if (!token) {
       return false;
     }
   
     try {
+      console.log("try is running")
       const { data } = await saveBookMutation({
         variables: {
-          authors: bookToSave.authors,
-          description: bookToSave.description,
-          title: bookToSave.title,
-          bookId: bookToSave.bookId,
-          image: bookToSave.image,
+          
+          bookInput: {
+            authors: bookToSave.authors,
+            description: bookToSave.description,
+            title: bookToSave.title,
+            bookId: bookToSave.bookId,
+            image: bookToSave.image,
+            link: bookToSave.link,
+          },
         },
       });
+
+      console.log('mutation data:', data.saveBook)
+
+      if(!data.saveBook) {
+        throw new Error('something went wrong!');
+      }
   
       // Check if there are errors in the mutation response
-      if (data && data.saveBook && data.saveBook._id) {
-        // If book successfully saves to the user's account, save book id to state
+      if (data.saveBook && data.saveBook.user._id) {
+        // If the book successfully saves to the user's account, save book id to state
         setSavedBookIds((prevSavedBookIds) => [...prevSavedBookIds, bookToSave.bookId]);
-        console.log('Book saved successfully!');
+        console.log('Book saved successfully!', data.saveBook._id);
       } else {
-        console.error('Failed to save book:', data);
+        console.error('_id is undefined in data.saveBook:', data.saveBook);
       }
     } catch (error) {
       console.error('Error in saveBookMutation:', error);
