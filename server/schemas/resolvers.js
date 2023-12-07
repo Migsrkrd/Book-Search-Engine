@@ -23,13 +23,15 @@ const resolvers = {
             const user = await User.findOne({email});
 
             if(!user){
-                throw new AuthenticationError;
+                console.log('User not found');
+                throw new Error('User not found');
             }
 
             const correctPw = await user.isCorrectPassword(password);
 
             if(!correctPw){
-                throw new AuthenticationError;
+                console.log('Incorrect password');
+                throw new Error('Incorrect password');
             }
 
             const token = signToken(user);

@@ -101,7 +101,7 @@ const SearchBooks = () => {
       }
   
       // Check if there are errors in the mutation response
-      if (data.saveBook && data.saveBook.user._id) {
+      if (data.saveBook && data.saveBook._id) {
         // If the book successfully saves to the user's account, save book id to state
         setSavedBookIds((prevSavedBookIds) => [...prevSavedBookIds, bookToSave.bookId]);
         console.log('Book saved successfully!', data.saveBook._id);
