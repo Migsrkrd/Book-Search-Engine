@@ -25,13 +25,27 @@ const SavedBooks = () => {
   //   }
   // }, [data]);
 
-  const [loading, getUserData] = useQuery(GET_ME);
+  const id_token = localStorage.getItem('id_token');
 
-  console.log(getUserData);
+  const {loading, data} = useQuery(GET_ME, {
+    context: {
+    headers: {
+      authorization: id_token ? `Bearer ${id_token}` : '',
+    },
+  },
+  });
 
-  setUserData(getUserData?.data?.me || []);
+  if(!data) {
+    return <h2>LOADING...</h2>;
+  }
 
-  console.log(userData);
+  if(data && data.me){
+    console.log("data.me", data.me);
+  setUserData(data.me);
+}
+console.log("userData",userData);
+
+  // console.log(userData);
 
   const handleDeleteBook = async (bookId) => {
     try {
