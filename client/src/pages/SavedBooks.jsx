@@ -25,9 +25,13 @@ const SavedBooks = () => {
   //   }
   // }, [data]);
 
-  const [getUserData, { loading }] = useQuery(GET_ME);
+  const [loading, getUserData] = useQuery(GET_ME);
+
+  console.log(getUserData);
 
   setUserData(getUserData?.data?.me || []);
+
+  console.log(userData);
 
   const handleDeleteBook = async (bookId) => {
     try {
